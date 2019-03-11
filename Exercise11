@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Oct  8 19:27:40 2018
+
+@author: alexchizh
+"""
+import numpy as np
+
+def linearpolyene(n):
+    """ Determines energy and degeneracy of pi MOs within a n carbon linear polyene. """
+    huckel = np.zeros((n, n))
+    for i in range(n):
+        if i == 0:
+            huckel[i, i+1] = -1
+        if i == (n-1):
+            huckel[i, i-1] = -1
+        else:
+            huckel[i, i+1] = -1
+            huckel[i, i-1] = -1
+    evals_list = []
+    evals, evecs = np.linalg.eig(huckel)
+    for x in sorted(evals):
+        evals_list.append(round(x, 5))
+    for x in evals_list:
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
+
+def cyclicpolyene(n):
+    """ Determines energy and degeneracy of pi MOs within a n carbon cyclic polyene. """
+    huckel = np.zeros((n, n))
+    for i in range(n):
+        if i == 0:
+            huckel[i, i+1] = -1
+            huckel[i, n-1] = -1
+        if i == (n-1):
+            huckel[i, 0] = -1
+            huckel[i, i-1] = -1
+        else:
+            huckel[i, i+1] = -1
+            huckel[i, i-1] = -1
+    evals_list = []    
+    evals, evecs = np.linalg.eig(huckel)
+    for x in sorted(evals):
+        evals_list.append(round(x, 5))
+    for x in sorted(set(evals_list)):
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
+
+def tetrahedron():
+    """ Determines energy and degeneracy of pi MOs within a carbon tetrahedron """
+    n = 4
+    huckel = np.zeros((n, n))
+    for i in range(n):
+        if i == 0:
+            huckel[i, n-1] = -1
+            huckel[i, i+1] = -1
+        if i == n-1:
+            huckel[i, 0] = -1
+            huckel[i, i-1] = -1
+        else:
+            huckel[i, i+1] = -1
+            huckel[i, i-1] = -1
+    evals_list = []
+    evals, evecs = np.linalg.eig(huckel)
+    for x in sorted(evals):
+        evals_list.append(round(x, 5))
+    for x in sorted(set(evals_list)):
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
+
+def cube():
+    """ Determines energy and degeneracy of pi MOs within a carbon cube. """
+    n = 8
+    huckel = np.zeros((n, n))
+    cube_coords = []
+    val_range = [-1, 1]
+    for i in val_range:
+        for j in val_range:
+            for k in val_range:
+                cube_coords.append([i, j, k])
+    for p in cube_coords:
+        for q in cube_coords:
+            s = []
+            for i in range(3):
+                s.append(float(p[i]) - q[i])
+            if np.linalg.norm(s) == 2.0:
+                huckel[cube_coords.index(p), cube_coords.index(q)] = -1
+    evals_list = []
+    evals, evecs = np.linalg.eig(huckel)
+    for x in evals:
+        evals_list.append(round(x, 4))
+    for x in sorted(set(evals_list)):
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
+
+def dodecahedron():
+    """ Determines energy and degeneracy of pi MOs within a carbon dodecahedron. """
+    phi = (1.0 + (5)**0.5)/2
+    inv_phi = 1/phi
+    edge_length = 2/phi
+    dode_coords = []
+    val_range1 = [-1, 1]
+    val_range2 = [-phi, phi]
+    val_range3 = [-inv_phi, inv_phi]
+    n = 20
+    huckel = np.zeros((n, n))
+    for i in val_range1:
+        for j in val_range1:
+            for k in val_range1:
+                dode_coords.append([i, j, k])
+    for m in val_range2:
+        for n in val_range3:
+            dode_coords.append([0, m, n])
+            dode_coords.append([n, 0, m])
+            dode_coords.append([m, n, 0])    
+    for n in dode_coords:
+        for m in dode_coords:
+            s = []
+            for i in range(3):
+                s.append(float(n[i]) - m[i])
+            if abs(np.linalg.norm(s) - edge_length) < 1E-5:
+                huckel[dode_coords.index(n), dode_coords.index(m)] = -1
+    evals_list = []
+    evals, evecs = np.linalg.eig(huckel)
+    for x in evals:
+        evals_list.append(round(x, 4))
+    for x in sorted(set(evals_list)):
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
+
+def buckminsterfullerene():
+    """ Determines energy and degeneracy of pi MOs within buckminsterfullerene. """
+    phi = (1.0 + (5)**0.5)/2
+    edge_length = 2
+    buck_coords = []
+    val_range1 = [-1, 1]
+    val_range2 = [-phi, phi]
+    val_range3 = [-(2+phi), (2+phi)]
+    n = 60
+    huckel = np.zeros((n, n))
+    for m in val_range1:
+        for n in val_range2:
+            buck_coords.append([0, m, 3*n])
+            buck_coords.append([3*n, 0, m])
+            buck_coords.append([m, 3*n, 0])
+            for o in val_range3:
+                buck_coords.append([m, o, 2*n])
+                buck_coords.append([o, 2*n, m])
+                buck_coords.append([2*n, m, o])
+            for p in val_range2:
+                buck_coords.append([n, 2*m, p**3])
+                buck_coords.append([2*m, p**3, n])
+                buck_coords.append([p**3, n, 2*m])      
+    for n in buck_coords:
+        for m in buck_coords:
+            s = []
+            for i in range(3):
+                s.append(float(n[i]) - m[i])
+            if abs(np.linalg.norm(s) - edge_length) < 1E-5:
+                huckel[buck_coords.index(n), buck_coords.index(m)] = -1    
+    evals_list = []
+    evals, evecs = np.linalg.eig(huckel)
+    for x in evals:
+        evals_list.append(round(x, 4))
+    for x in sorted(set(evals_list)):
+        print("MO energy = %.3f, degeneracy = %d" % (x, evals_list.count(x)))
